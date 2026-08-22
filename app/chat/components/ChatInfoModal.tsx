@@ -1,13 +1,15 @@
-import { Avatar, Button, Input, Modal, ScrollShadow } from "@heroui/react";
-import { UserPlus, Search, X, Check } from "lucide-react";
+import { Avatar, Button, Input, Modal } from "@heroui/react";
+import { UserPlus, Search, X } from "lucide-react";
 import { useState, useCallback } from "react";
 import debounce from "debounce";
+import { User } from "@/module/user/type";
+import { ChatParticipant, ChatWithDetails } from "@/module/chat/type";
 
 interface ChatInfoModalProps {
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
-    chat: any;
-    user: any;
+    chat: ChatWithDetails | null;
+    user: User | null;
     onUpdate: () => void;
 }
 
@@ -20,7 +22,7 @@ export function ChatInfoModal({
 }: ChatInfoModalProps) {
     const [view, setView] = useState<"info" | "add">("info");
     const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<User[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
 
@@ -36,6 +38,7 @@ export function ChatInfoModal({
     };
 
     const handleRemoveParticipant = async (participantId: string) => {
+        if (!chat || !user) return;
         if (!confirm("Are you sure you want to remove this member?")) return;
 
         try {
@@ -59,6 +62,7 @@ export function ChatInfoModal({
     };
 
     const handleAddParticipant = async (participantId: string) => {
+        if (!chat) return;
         setIsAdding(true);
         try {
             const res = await fetch(`/api/chats/${chat.id}/add-participants`, {
@@ -88,10 +92,10 @@ export function ChatInfoModal({
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     // Filter out already existing participants
-                    const existingIds =
-                        chat?.participants?.map((p: any) => p.userId) || [];
+                    const existingIds: string[] =
+                        chat?.participants?.map((p: ChatParticipant) => p.userId) || [];
                     setSearchResults(
-                        data.filter((u: any) => !existingIds.includes(u.id)),
+                        data.filter((u: User) => !existingIds.includes(u.id)),
                     );
                 } else {
                     setSearchResults([]);
@@ -126,7 +130,7 @@ export function ChatInfoModal({
         fallback = chatName.substring(0, 2).toUpperCase();
     } else {
         const otherParticipant = chat.participants?.find(
-            (p: any) => p.userId !== user?.id,
+            (p: ChatParticipant) => p.userId !== user?.id,
         );
         if (otherParticipant?.user?.name) {
             chatName = otherParticipant.user.name;
@@ -177,7 +181,7 @@ export function ChatInfoModal({
 
                                     <div className="w-full flex flex-col gap-2 max-h-[300px] overflow-y-auto">
                                         {chat.participants?.map(
-                                            (participant: any) => {
+                                            (participant: ChatParticipant) => {
                                                 const isMe =
                                                     participant.userId ===
                                                     user?.id;

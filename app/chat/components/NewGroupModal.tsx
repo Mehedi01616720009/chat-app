@@ -1,6 +1,7 @@
 import { Avatar, Input, Modal, Button } from "@heroui/react";
 import { Search, Check, X } from "lucide-react";
 import { ReactNode, useState } from "react";
+import { User } from "@/module/user/type";
 
 interface NewGroupModalProps {
     isOpen: boolean;
@@ -8,7 +9,7 @@ interface NewGroupModalProps {
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isSearching: boolean;
-    searchResults: any[];
+    searchResults: User[];
     onCreateGroup: (name: string, selectedIds: string[]) => void;
     children?: ReactNode;
 }
@@ -24,7 +25,7 @@ export function NewGroupModal({
     children,
 }: NewGroupModalProps) {
     const [groupName, setGroupName] = useState("");
-    const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
     // Reset state when modal closes
     const handleOpenChange = (open: boolean) => {
@@ -36,7 +37,7 @@ export function NewGroupModal({
         onOpenChange(open);
     };
 
-    const toggleUser = (user: any) => {
+    const toggleUser = (user: User) => {
         setSelectedUsers((prev) => {
             if (prev.find((u) => u.id === user.id)) {
                 return prev.filter((u) => u.id !== user.id);

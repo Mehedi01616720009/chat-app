@@ -1,16 +1,19 @@
 import { Avatar, Button, Input } from "@heroui/react";
 import { useEffect, useState, useRef } from "react";
+import { Socket } from "socket.io-client";
 import { ChatInfoModal } from "./ChatInfoModal";
+import { User } from "@/module/user/type";
+import { ChatWithDetails, ChatMessage } from "@/module/chat/type";
 
 interface MainChatProps {
-    user: any;
-    chat: any;
-    socket: any;
+    user: User | null;
+    chat: ChatWithDetails | null;
+    socket: Socket | null;
     onChatUpdate: () => void;
 }
 
 export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -45,7 +48,7 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
         if (socket) {
             socket.emit("join-chat", chat.id);
 
-            const handleNewMessage = (msg: any) => {
+            const handleNewMessage = (msg: ChatMessage) => {
                 setMessages((prev) => [...prev, msg]);
                 setTimeout(() => {
                     if (scrollRef.current) {
@@ -67,20 +70,20 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
     }, [chat, user, socket]);
 
     const loadPreviousMessages = async () => {
-        if (!hasMore || isLoadingMore || messages.length === 0) return;
+        if (!hasMore || isLoadingMore || messages.length === 0 || !chat) return;
         setIsLoadingMore(true);
         const oldestMessageId = messages[0].id;
 
         try {
             const res = await fetch(`/api/messages?chatId=${chat.id}&cursor=${oldestMessageId}`);
-            const data = await res.json();
+            const data: ChatMessage[] = await res.json();
             if (Array.isArray(data)) {
                 setHasMore(data.length === 50);
-                
+
                 if (scrollRef.current) {
                     const scrollNode = scrollRef.current;
                     const previousScrollHeight = scrollNode.scrollHeight;
-                    
+
                     setMessages((prev) => [...data, ...prev]);
 
                     setTimeout(() => {
@@ -140,7 +143,7 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
         fallback = chatName.substring(0, 2).toUpperCase();
     } else {
         const otherParticipant = chat.participants?.find(
-            (p: any) => p.userId !== user?.id
+            (p) => p.userId !== user?.id
         );
         if (otherParticipant?.user?.name) {
             chatName = otherParticipant.user.name;
@@ -183,9 +186,9 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
                     <>
                         {hasMore && (
                             <div className="flex justify-center my-2">
-                                <Button 
-                                    size="sm" 
-                                    variant="outline" 
+                                <Button
+                                    size="sm"
+                                    variant="outline"
                                     className="text-xs text-default-500 bg-content2 hover:bg-content3 transition-colors"
                                     onPress={loadPreviousMessages}
                                     isPending={isLoadingMore}
@@ -195,7 +198,7 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
                             </div>
                         )}
                         {messages.map((msg) => {
-                        const isMe = msg.senderId === user.id;
+                        const isMe = msg.senderId === user?.id;
                         return (
                             <div key={msg.id} className={`flex gap-3 max-w-[80%] ${isMe ? "self-end flex-row-reverse" : ""}`}>
                                 {!isMe && (
@@ -207,8 +210,8 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
                                 )}
                                 <div className={`flex flex-col gap-1 ${isMe ? "items-end" : ""}`}>
                                     <div className={`p-3 rounded-2xl text-sm shadow-sm ${
-                                        isMe 
-                                        ? "bg-primary text-primary-foreground rounded-tr-sm" 
+                                        isMe
+                                        ? "bg-primary text-primary-foreground rounded-tr-sm"
                                         : "bg-content1 border border-border rounded-tl-sm"
                                     }`}>
                                         {msg.content}
@@ -226,7 +229,7 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
 
             {/* Chat Input */}
             <div className="p-4 bg-content1 border-t border-border shrink-0">
-                {chat.participants?.some((p: any) => p.userId === user?.id) ? (
+                {chat.participants?.some((p) => p.userId === user?.id) ? (
                     <form
                         className="flex gap-2 items-center"
                         onSubmit={handleSendMessage}

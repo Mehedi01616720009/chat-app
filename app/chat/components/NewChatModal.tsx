@@ -1,6 +1,7 @@
 import { Avatar, Input, Modal } from "@heroui/react";
 import { Search } from "lucide-react";
 import { ReactNode } from "react";
+import { User } from "@/module/user/type";
 
 interface NewChatModalProps {
     isOpen: boolean;
@@ -8,7 +9,7 @@ interface NewChatModalProps {
     searchQuery: string;
     onSearchChange: (query: string) => void;
     isSearching: boolean;
-    searchResults: any[];
+    searchResults: User[];
     onCreateChat: (userId: string) => void;
     children?: ReactNode;
 }

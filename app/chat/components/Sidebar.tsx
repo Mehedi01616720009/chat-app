@@ -1,10 +1,11 @@
 import { Avatar, Input, Separator } from "@heroui/react";
-
 import { ReactNode } from "react";
+import { User } from "@/module/user/type";
+import { ChatWithDetails } from "@/module/chat/type";
 
 interface SidebarProps {
-    user: any;
-    chats: any[];
+    user: User | null;
+    chats: ChatWithDetails[];
     loadingChats: boolean;
     activeChatId: string | null;
     onChatSelect: (chatId: string) => void;
@@ -53,7 +54,7 @@ export function Sidebar({
                             fallback = chatName.substring(0, 2).toUpperCase();
                         } else {
                             const otherParticipant = chat.participants?.find(
-                                (p: any) => p.userId !== user?.id,
+                                (p) => p.userId !== user?.id,
                             );
                             if (otherParticipant?.user?.name) {
                                 chatName = otherParticipant.user.name;
@@ -62,7 +63,10 @@ export function Sidebar({
                         }
 
                         const lastMessage = chat.messages?.[0];
-                        const isUnread = lastMessage && lastMessage.senderId !== user?.id && !lastMessage.isRead;
+                        const isUnread =
+                            lastMessage &&
+                            lastMessage.senderId !== user?.id &&
+                            !lastMessage.isRead;
 
                         return (
                             <div
@@ -80,16 +84,22 @@ export function Sidebar({
                                     </Avatar.Fallback>
                                 </Avatar>
                                 <div className="flex flex-col flex-grow overflow-hidden">
-                                    <span className={`text-sm ${isUnread ? "font-bold" : "font-medium"}`}>
+                                    <span
+                                        className={`text-sm ${isUnread ? "font-bold" : "font-medium"}`}
+                                    >
                                         {chatName}
                                     </span>
-                                    <span className={`text-xs truncate ${isUnread ? "font-bold text-foreground" : "text-default-500"}`}>
+                                    <span
+                                        className={`text-xs truncate ${isUnread ? "font-bold text-foreground" : "text-default-500"}`}
+                                    >
                                         {lastMessage
                                             ? lastMessage.content
                                             : "No messages yet"}
                                     </span>
                                 </div>
-                                <span className={`text-xs shrink-0 ${isUnread ? "font-bold text-primary" : "text-default-400"}`}>
+                                <span
+                                    className={`text-xs shrink-0 ${isUnread ? "font-bold text-primary" : "text-default-400"}`}
+                                >
                                     {lastMessage
                                         ? new Date(
                                               chat.messages[0].createdAt,

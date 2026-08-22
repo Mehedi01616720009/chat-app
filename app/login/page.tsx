@@ -49,11 +49,13 @@ export default function LoginPage() {
             document.cookie = "isLoggedin=true; path=/; max-age=86400"; // 1 day
 
             router.push("/chat");
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (err instanceof z.ZodError) {
                 setError(err.issues[0].message);
-            } else {
+            } else if (err instanceof Error) {
                 setError(err.message || "An unexpected error occurred.");
+            } else {
+                setError("An unexpected error occurred.");
             }
         } finally {
             setLoading(false);

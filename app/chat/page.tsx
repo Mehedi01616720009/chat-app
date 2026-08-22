@@ -9,14 +9,16 @@ import { NewGroupModal } from "./components/NewGroupModal";
 import { Button } from "@heroui/react";
 import { MessageSquarePlus, Users } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
+import { User } from "@/module/user/type";
+import { ChatWithDetails, ChatMessage } from "@/module/chat/type";
 
 function ChatPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const activeChatId = searchParams.get("chatId") || searchParams.get("userId"); // Support both mentally
 
-    const [socket, setSocket] = useState<any>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
         const s = io();
@@ -25,16 +27,16 @@ function ChatPageContent() {
             s.disconnect();
         };
     }, []);
-    const [user, setUser] = useState<any>(null);
-    const [chats, setChats] = useState<any[]>([]);
+    const [user, setUser] = useState<User | null>(null);
+    const [chats, setChats] = useState<ChatWithDetails[]>([]);
     const [loadingChats, setLoadingChats] = useState(true);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searchResults, setSearchResults] = useState<User[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [fetchedChat, setFetchedChat] = useState<any>(null);
+    const [fetchedChat, setFetchedChat] = useState<ChatWithDetails | null>(null);
 
     const loadChats = useCallback((userId: string) => {
         fetch(`/api/chats?userId=${userId}`)
@@ -107,7 +109,7 @@ function ChatPageContent() {
     useEffect(() => {
         if (!socket) return;
         
-        const handleNewMessage = (msg: any) => {
+        const handleNewMessage = (msg: ChatMessage) => {
             const isForActiveChat = msg.chatId === activeChatId;
             const isFromMe = msg.senderId === user?.id;
             
@@ -149,7 +151,7 @@ function ChatPageContent() {
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     setSearchResults(
-                        data.filter((u: any) => u.id !== currentUserId),
+                        data.filter((u: User) => u.id !== currentUserId),
                     );
                 } else {
                     setSearchResults([]);
@@ -172,10 +174,13 @@ function ChatPageContent() {
         }
 
         setIsSearching(true);
-        fetchUsers(query, user?.id);
+        if (user) {
+            fetchUsers(query, user.id);
+        }
     };
 
     const handleCreateChat = async (selectedUserId: string) => {
+        if (!user) return;
         try {
             const res = await fetch("/api/chats", {
                 method: "POST",
@@ -198,6 +203,7 @@ function ChatPageContent() {
     };
 
     const handleCreateGroup = async (name: string, selectedUserIds: string[]) => {
+        if (!user) return;
         try {
             const res = await fetch("/api/chats", {
                 method: "POST",
@@ -295,7 +301,7 @@ function ChatPageContent() {
                 user={user} 
                 chat={activeChat} 
                 socket={socket} 
-                onChatUpdate={() => loadChats(user.id)}
+                onChatUpdate={() => user && loadChats(user.id)}
             />
         </div>
     );
