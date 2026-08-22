@@ -226,26 +226,32 @@ export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
 
             {/* Chat Input */}
             <div className="p-4 bg-content1 border-t border-border shrink-0">
-                <form
-                    className="flex gap-2 items-center"
-                    onSubmit={handleSendMessage}
-                >
-                    <Input
-                        placeholder="Type a message..."
-                        variant="secondary"
-                        fullWidth
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                    />
-                    <Button
-                        type="submit"
-                        variant="primary"
-                        className="font-medium"
-                        isDisabled={!newMessage.trim()}
+                {chat.participants?.some((p: any) => p.userId === user?.id) ? (
+                    <form
+                        className="flex gap-2 items-center"
+                        onSubmit={handleSendMessage}
                     >
-                        Send
-                    </Button>
-                </form>
+                        <Input
+                            placeholder="Type a message..."
+                            variant="secondary"
+                            fullWidth
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                        />
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            className="font-medium"
+                            isDisabled={!newMessage.trim()}
+                        >
+                            Send
+                        </Button>
+                    </form>
+                ) : (
+                    <div className="text-center text-sm text-danger font-medium py-2 bg-danger/10 rounded-lg">
+                        You are no longer a participant in this chat.
+                    </div>
+                )}
             </div>
         </div>
     );

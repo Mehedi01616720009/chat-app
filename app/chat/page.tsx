@@ -34,6 +34,7 @@ function ChatPageContent() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [fetchedChat, setFetchedChat] = useState<any>(null);
 
     const loadChats = useCallback((userId: string) => {
         fetch(`/api/chats?userId=${userId}`)
@@ -64,10 +65,57 @@ function ChatPageContent() {
         }
     }, [socket, chats]);
 
+    const markChatAsRead = useCallback(async (chatId: string, currentUserId: string) => {
+        try {
+            await fetch(`/api/chats/${chatId}/mark-read`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: currentUserId }),
+            });
+            
+            setChats((prev) => 
+                prev.map((c) => {
+                    if (c.id === chatId && c.messages && c.messages.length > 0) {
+                        return {
+                            ...c,
+                            messages: [
+                                {
+                                    ...c.messages[0],
+                                    isRead: true,
+                                }
+                            ]
+                        };
+                    }
+                    return c;
+                })
+            );
+        } catch (e) {
+            console.error("Failed to mark chat as read", e);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (activeChatId && user) {
+            const chat = chats.find(c => c.id === activeChatId);
+            const lastMessage = chat?.messages?.[0];
+            if (lastMessage && lastMessage.senderId !== user.id && !lastMessage.isRead) {
+                markChatAsRead(activeChatId, user.id);
+            }
+        }
+    }, [activeChatId, user, chats, markChatAsRead]);
+
     useEffect(() => {
         if (!socket) return;
         
         const handleNewMessage = (msg: any) => {
+            const isForActiveChat = msg.chatId === activeChatId;
+            const isFromMe = msg.senderId === user?.id;
+            
+            if (isForActiveChat && !isFromMe && user) {
+                msg.isRead = true;
+                markChatAsRead(msg.chatId, user.id);
+            }
+
             setChats((prev) => {
                 const chatIndex = prev.findIndex((c) => c.id === msg.chatId);
                 if (chatIndex === -1) return prev;
@@ -90,7 +138,7 @@ function ChatPageContent() {
         return () => {
             socket.off("new-message", handleNewMessage);
         };
-    }, [socket]);
+    }, [socket, activeChatId, user, markChatAsRead]);
 
     const fetchUsers = useCallback(
         debounce(async (query: string, currentUserId: string) => {
@@ -172,7 +220,24 @@ function ChatPageContent() {
         }
     };
 
-    const activeChat = chats.find((c) => c.id === activeChatId) || null;
+    const activeChatFromList = chats.find((c) => c.id === activeChatId) || null;
+
+    useEffect(() => {
+        if (activeChatId && !activeChatFromList) {
+            fetch(`/api/chats/${activeChatId}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data && !data.error) {
+                        setFetchedChat(data);
+                    }
+                })
+                .catch(console.error);
+        } else {
+            setFetchedChat(null);
+        }
+    }, [activeChatId, activeChatFromList]);
+
+    const activeChat = activeChatFromList || fetchedChat;
 
     return (
         <div className="flex h-[100dvh] w-full bg-background overflow-hidden">

@@ -5,8 +5,9 @@ import { ChatAddParticipantsSchema } from "@/module/chat/schema";
 import { ChatType } from "@/generated/prisma/enums";
 
 export const PATCH = catchAsync(
-    async (req: NextRequest, { params }: { params: { id: string } }) => {
-        const chatId = params.id;
+    async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+        const { id } = await params;
+        const chatId = id;
         const body = await req.json();
         const { participantIds } = ChatAddParticipantsSchema.parse(body);
 
