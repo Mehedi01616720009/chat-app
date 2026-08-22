@@ -7,7 +7,7 @@ import { MainChat } from "./components/MainChat";
 import { NewChatModal } from "./components/NewChatModal";
 import { NewGroupModal } from "./components/NewGroupModal";
 import { Button } from "@heroui/react";
-import { MessageSquarePlus, Users } from "lucide-react";
+import { MessageSquarePlus, Users, Book } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { User } from "@/module/user/type";
@@ -303,6 +303,17 @@ function ChatPageContent() {
                 socket={socket} 
                 onChatUpdate={() => user && loadChats(user.id)}
             />
+
+            {/* Floating Doc Button */}
+            <Button
+                isIconOnly
+                variant="primary"
+                className="fixed bottom-6 right-6 shadow-lg rounded-full h-12 w-12 z-50"
+                onPress={() => router.push("/doc")}
+                aria-label="View API Documentation"
+            >
+                <Book size={20} />
+            </Button>
         </div>
     );
 }

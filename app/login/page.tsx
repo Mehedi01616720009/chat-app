@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserSchema } from "@/module/user/schema";
 import { z } from "zod";
+import { Book } from "lucide-react";
 
 import {
     Input,
@@ -116,6 +117,17 @@ export default function LoginPage() {
                     </form>
                 </CardFooter>
             </Card>
+
+            {/* Floating Doc Button */}
+            <Button
+                isIconOnly
+                variant="primary"
+                className="fixed bottom-6 right-6 shadow-lg rounded-full h-12 w-12 z-50"
+                onPress={() => router.push("/doc")}
+                aria-label="View API Documentation"
+            >
+                <Book size={20} />
+            </Button>
         </div>
     );
 }
