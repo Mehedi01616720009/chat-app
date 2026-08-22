@@ -5,8 +5,8 @@ import { ChatRemoveParticipantSchema } from "@/module/chat/schema";
 import { ChatType } from "@/generated/prisma/enums";
 
 export const PATCH = catchAsync(
-    async (req: NextRequest, { params }: { params: { chatId: string } }) => {
-        const { chatId } = params;
+    async (req: NextRequest, { params }: { params: { id: string } }) => {
+        const chatId = params.id;
         const body = await req.json();
         const { participantId } = ChatRemoveParticipantSchema.parse(body);
 

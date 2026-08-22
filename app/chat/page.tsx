@@ -5,8 +5,9 @@ import debounce from "debounce";
 import { Sidebar } from "./components/Sidebar";
 import { MainChat } from "./components/MainChat";
 import { NewChatModal } from "./components/NewChatModal";
+import { NewGroupModal } from "./components/NewGroupModal";
 import { Button } from "@heroui/react";
-import { MessageSquarePlus } from "lucide-react";
+import { MessageSquarePlus, Users } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 
@@ -29,6 +30,7 @@ function ChatPageContent() {
     const [loadingChats, setLoadingChats] = useState(true);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -147,6 +149,29 @@ function ChatPageContent() {
         }
     };
 
+    const handleCreateGroup = async (name: string, selectedUserIds: string[]) => {
+        try {
+            const res = await fetch("/api/chats", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name,
+                    participantIds: [user.id, ...selectedUserIds],
+                }),
+            });
+            if (res.ok) {
+                setIsGroupModalOpen(false);
+                setSearchQuery("");
+                setSearchResults([]);
+                loadChats(user.id);
+                const chatData = await res.json();
+                router.push(`?chatId=${chatData.id}`);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     const activeChat = chats.find((c) => c.id === activeChatId) || null;
 
     return (
@@ -178,12 +203,34 @@ function ChatPageContent() {
                         </Button>
                     </NewChatModal>
                 }
+                newGroupSlot={
+                    <NewGroupModal
+                        isOpen={isGroupModalOpen}
+                        onOpenChange={setIsGroupModalOpen}
+                        searchQuery={searchQuery}
+                        onSearchChange={handleSearch}
+                        isSearching={isSearching}
+                        searchResults={searchResults}
+                        onCreateGroup={handleCreateGroup}
+                    >
+                        <Button
+                            isIconOnly
+                            size="sm"
+                            variant="primary"
+                            onPress={() => setIsGroupModalOpen(true)}
+                            aria-label="New Group"
+                        >
+                            <Users size={18} />
+                        </Button>
+                    </NewGroupModal>
+                }
             />
 
             <MainChat 
                 user={user} 
                 chat={activeChat} 
                 socket={socket} 
+                onChatUpdate={() => loadChats(user.id)}
             />
         </div>
     );

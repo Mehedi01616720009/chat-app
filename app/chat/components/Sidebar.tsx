@@ -1,5 +1,4 @@
-import { Avatar, Button, Input, Separator } from "@heroui/react";
-import { MessageSquarePlus, Users } from "lucide-react";
+import { Avatar, Input, Separator } from "@heroui/react";
 
 import { ReactNode } from "react";
 
@@ -10,9 +9,18 @@ interface SidebarProps {
     activeChatId: string | null;
     onChatSelect: (chatId: string) => void;
     newChatSlot?: ReactNode;
+    newGroupSlot?: ReactNode;
 }
 
-export function Sidebar({ user, chats, loadingChats, activeChatId, onChatSelect, newChatSlot }: SidebarProps) {
+export function Sidebar({
+    user,
+    chats,
+    loadingChats,
+    activeChatId,
+    onChatSelect,
+    newChatSlot,
+    newGroupSlot,
+}: SidebarProps) {
     return (
         <div className="w-80 flex-shrink-0 border-r border-border flex flex-col h-full bg-content1">
             <div className="p-4 flex flex-col gap-4">
@@ -20,14 +28,7 @@ export function Sidebar({ user, chats, loadingChats, activeChatId, onChatSelect,
                     <h1 className="text-xl font-bold">Messages</h1>
                     <div className="flex gap-2">
                         {newChatSlot}
-                        <Button
-                            isIconOnly
-                            size="sm"
-                            variant="primary"
-                            aria-label="New Group"
-                        >
-                            <Users size={18} />
-                        </Button>
+                        {newGroupSlot}
                     </div>
                 </div>
                 <Input placeholder="Search chats..." variant="primary" />
@@ -52,7 +53,7 @@ export function Sidebar({ user, chats, loadingChats, activeChatId, onChatSelect,
                             fallback = chatName.substring(0, 2).toUpperCase();
                         } else {
                             const otherParticipant = chat.participants?.find(
-                                (p: any) => p.userId !== user?.id
+                                (p: any) => p.userId !== user?.id,
                             );
                             if (otherParticipant?.user?.name) {
                                 chatName = otherParticipant.user.name;
@@ -60,31 +61,45 @@ export function Sidebar({ user, chats, loadingChats, activeChatId, onChatSelect,
                             }
                         }
 
+                        const lastMessage = chat.messages?.[0];
+                        const isUnread = lastMessage && lastMessage.senderId !== user?.id && !lastMessage.isRead;
+
                         return (
                             <div
                                 key={chat.id}
                                 className={`flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer ${
-                                    activeChatId === chat.id ? "bg-default-200" : "hover:bg-default-100"
+                                    activeChatId === chat.id
+                                        ? "bg-default-200"
+                                        : "hover:bg-default-100"
                                 }`}
                                 onClick={() => onChatSelect(chat.id)}
                             >
                                 <Avatar>
-                                    <Avatar.Fallback>{fallback}</Avatar.Fallback>
+                                    <Avatar.Fallback>
+                                        {fallback}
+                                    </Avatar.Fallback>
                                 </Avatar>
                                 <div className="flex flex-col flex-grow overflow-hidden">
-                                    <span className="text-sm font-medium">
+                                    <span className={`text-sm ${isUnread ? "font-bold" : "font-medium"}`}>
                                         {chatName}
                                     </span>
-                                    <span className="text-xs text-default-500 truncate">
-                                        {chat.messages && chat.messages.length > 0
-                                            ? chat.messages[0].content
+                                    <span className={`text-xs truncate ${isUnread ? "font-bold text-foreground" : "text-default-500"}`}>
+                                        {lastMessage
+                                            ? lastMessage.content
                                             : "No messages yet"}
                                     </span>
                                 </div>
-                                <span className="text-xs text-default-400 shrink-0">
-                                    {chat.messages && chat.messages.length > 0
-                                        ? new Date(chat.messages[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                        : new Date(chat.createdAt).toLocaleDateString()}
+                                <span className={`text-xs shrink-0 ${isUnread ? "font-bold text-primary" : "text-default-400"}`}>
+                                    {lastMessage
+                                        ? new Date(
+                                              chat.messages[0].createdAt,
+                                          ).toLocaleTimeString([], {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                          })
+                                        : new Date(
+                                              chat.createdAt,
+                                          ).toLocaleDateString()}
                                 </span>
                             </div>
                         );

@@ -770,7 +770,6 @@ export const ChatScalarFieldEnum = {
   id: 'id',
   type: 'type',
   name: 'name',
-  isGroup: 'isGroup',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -793,6 +792,7 @@ export const MessageScalarFieldEnum = {
   chatId: 'chatId',
   senderId: 'senderId',
   content: 'content',
+  isRead: 'isRead',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

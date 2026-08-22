@@ -1,18 +1,21 @@
 import { Avatar, Button, Input } from "@heroui/react";
 import { useEffect, useState, useRef } from "react";
+import { ChatInfoModal } from "./ChatInfoModal";
 
 interface MainChatProps {
     user: any;
     chat: any;
     socket: any;
+    onChatUpdate: () => void;
 }
 
-export function MainChat({ user, chat, socket }: MainChatProps) {
+export function MainChat({ user, chat, socket, onChatUpdate }: MainChatProps) {
     const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
+    const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -157,10 +160,18 @@ export function MainChat({ user, chat, socket }: MainChatProps) {
                         <h2 className="text-sm font-semibold">{chatName}</h2>
                     </div>
                 </div>
-                <Button size="sm" variant="ghost">
+                <Button size="sm" variant="ghost" onPress={() => setIsInfoModalOpen(true)}>
                     Info
                 </Button>
             </div>
+
+            <ChatInfoModal
+                isOpen={isInfoModalOpen}
+                onOpenChange={setIsInfoModalOpen}
+                chat={chat}
+                user={user}
+                onUpdate={onChatUpdate}
+            />
 
             {/* Chat Messages */}
             <div className="flex-grow p-6 flex flex-col gap-4 overflow-y-auto" ref={scrollRef}>

@@ -17,7 +17,6 @@ CREATE TABLE "Chat" (
     "id" TEXT NOT NULL,
     "type" "ChatType" NOT NULL DEFAULT 'ONE_TO_ONE',
     "name" TEXT,
-    "isGroup" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -40,6 +39,7 @@ CREATE TABLE "Message" (
     "chatId" TEXT NOT NULL,
     "senderId" TEXT NOT NULL,
     "content" TEXT NOT NULL,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
