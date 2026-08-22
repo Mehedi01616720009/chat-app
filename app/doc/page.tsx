@@ -473,8 +473,9 @@ export default function APIDocPage() {
                     className="prose prose-zinc dark:prose-invert max-w-none 
                     prose-headings:font-bold prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl
                     prose-a:text-primary hover:prose-a:text-primary/80 prose-a:no-underline
-                    prose-pre:bg-content1 prose-pre:border prose-pre:border-border prose-pre:rounded-xl
+                    prose-pre:bg-zinc-900 dark:prose-pre:bg-zinc-950 prose-pre:border prose-pre:border-zinc-800 prose-pre:rounded-xl prose-pre:text-white
                     prose-code:text-accent-foreground prose-code:bg-accent/20 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
+                    [&_pre_code]:bg-transparent [&_pre_code]:text-white [&_pre_code]:p-0 [&_pre_code]:font-normal
                     prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
                     prose-table:border prose-table:border-border prose-th:bg-content1 prose-th:p-3 prose-td:p-3 prose-td:border-t prose-td:border-border
                     prose-hr:border-border
