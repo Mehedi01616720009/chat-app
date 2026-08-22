@@ -1,0 +1,60 @@
+generator client {
+    provider = "prisma-client"
+    output   = "../generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+enum ChatType {
+    ONE_TO_ONE
+    GROUP
+}
+
+// model
+model User {
+    id        String   @id @default(uuid())
+    name      String
+    phone     String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    participants ChatParticipant[]
+    messages     Message[]
+}
+
+model Chat {
+    id        String   @id @default(uuid())
+    type      ChatType @default(ONE_TO_ONE)
+    name      String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    participants ChatParticipant[]
+    messages     Message[]
+}
+
+model ChatParticipant {
+    id       String   @id @default(uuid())
+    chatId   String
+    userId   String
+    joinedAt DateTime @default(now())
+
+    chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([chatId, userId])
+}
+
+model Message {
+    id        String   @id @default(uuid())
+    chatId    String
+    senderId  String
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+    sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
